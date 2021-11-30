@@ -172,3 +172,74 @@ from
 	inner join PortfolioProject..CovidVaccinations [vaccinations]
 		on deaths.[location] = vaccinations.[location]
 		and deaths.[date] = vaccinations.[date]
+go
+----------------------------------------
+--Queries used for Tableau Project
+----------------------------------------
+/*
+Just a double check based off the data provided
+numbers are extremely close so we will keep them - The Second includes "International"  Location
+*/
+-- 1. 
+
+select 
+	sum(cast(new_cases as decimal(38,2))) as total_cases, 
+	sum(cast(new_deaths as decimal(38,2))) as total_deaths, 
+	sum(cast(new_deaths as decimal(38,2)))/sum(cast(New_Cases as decimal(38,2)))*100 as DeathPercentage
+from 
+	PortfolioProject..CovidDeaths
+where 
+	continent is not null 
+order by 1,2
+
+
+-- 2. 
+
+/*
+We take these out as they are not inluded in the above queries and want to stay consistent
+European Union is part of Europe
+*/
+
+select 
+	location, 
+	sum(cast(new_deaths as decimal(38,2))) as TotalDeathCount
+from 
+	PortfolioProject..CovidDeaths
+where 
+	continent is null 
+	and location not in ('World', 'European Union', 'International')
+group by 
+	location
+order by 
+	TotalDeathCount desc
+
+
+-- 3.
+select 
+	Location, 
+	Population, 
+	max(cast(total_cases as decimal(38,2))) as HighestInfectionCount,  
+	max((cast(total_cases as decimal(38,2))/population))*100 as PercentPopulationInfected
+from
+	PortfolioProject..CovidDeaths
+group by 
+	Location, Population
+order by
+	PercentPopulationInfected desc
+
+
+-- 4.
+select 
+	Location, 
+	Population,
+	date, 
+	max(cast(total_cases as decimal(38,2))) as HighestInfectionCount, 
+	max((cast(total_cases as decimal(38,2))/population))*100 as PercentPopulationInfected
+from
+	PortfolioProject..CovidDeaths
+group by
+	Location, 
+	Population, 
+	date
+order by 
+	PercentPopulationInfected desc
